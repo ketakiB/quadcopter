@@ -1,5 +1,4 @@
 clear;
-load 'references.mat';
 
 % Data
 m = 0.5;
@@ -12,11 +11,14 @@ Ixx = 5 * 10^(-3);
 Iyy = 5 * 10^(-3);
 Izz = 1 * 10^(-2);
 c_m = 1 * 10^(4);
+Tmax = 50;
 
 % System Sizes
 nx = 12;    % Nb of states
 nu = 4;     % Nb of inputs
 ny = 6;     % Nb of outputs
+
+x0_quadcopter = zeros(nx,1);
 
 % Inputs at equilbrium point (all states 0)
 u_eq = g*m/(4*k*c_m);
@@ -114,8 +116,5 @@ OB = obsv(A,C);
 disp('Rank of the observability matrix:');
 rank(OB)
 
-%****************************************************
-% Transmission zeros
-%****************************************************
-disp(tzero(c_sys))
+
 
