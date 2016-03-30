@@ -10,7 +10,7 @@ C_d = C*M;
 D_d = D + C_d*B*T_s/2;
 
 % Creating the discrete time system
-sys = ss(A_d,B_d,C_d,D_d);
+sys = ss(A_d,B_d,C_d,D_d,T_s);
 
 %************************
 %Checking the stability
