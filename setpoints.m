@@ -1,30 +1,32 @@
 load 'ref_trajectory.mat';
-refs = refs(:,1:3);
+%refs = refs(:,1:3);
+%refs = refs_new;
+[M,~] = size(refs);
 % Built optimization problem that finds u such that (y-y_ref) minimized
 
 % refs are organized [x_ref, y_ref, z_ref] but must be flattened in vector
 % [x_ref(1); y_ref(1); z_ref(1); ...; y_ref(Tmax); z_ref(Tmax)]
 
-y_ref_vector = reshape(refs',[Tmax*ny,1]);
+y_ref_vector = reshape(refs',[M*ny,1]);
 
 % construct O = [C ; CA; CA^2; ... ; CA^{Tmax-1}]
 % Constructing O
-O = zeros(Tmax*ny,nx);
+O = zeros(M*ny,nx);
 O(1:ny,:) = C_d;
-for i=1:Tmax-1
+for i=1:M-1
     O(i*ny+1:(i+1)*ny,:) = O((i-1)*ny+1:i*ny,:)*A_d;
 end
 
 % construct H = matrix of markov parameters: H_0 = D, H_k = CA^{k-1}B
-colH = zeros(Tmax*ny,nu);
+colH = zeros(M*ny,nu);
 colH(1:ny,:)=D_d;
 temp = B_d;
-for k=1:Tmax-1
+for k=1:M-1
     colH(k*ny+1:(k+1)*ny,:)=C_d*temp;
     temp = A_d*temp;
 end
-H = zeros(Tmax*ny,Tmax*nu);
-for i=0:Tmax-1
+H = zeros(M*ny,M*nu);
+for i=0:M-1
     H(:,i*nu+1:(i+1)*nu) = colH;
     colH = [zeros(ny, nu); 
             colH(1:end-ny,:)];
@@ -33,16 +35,18 @@ end
 % Solve optimization problem: find u 
 %u_opt = quadprog(H'*H,H'*(O*x0_quadcopter-y_ref_vector),[eye(Tmax*nu);-eye(Tmax*nu)],[100*ones(Tmax*nu,1);zeros(Tmax*nu,1)]);
 %u_opt = quadprog(H'*H,H'*(y_ref_vector-O*x0_quadcopter));
-Q = eye(Tmax*ny);
-R = 1e-7*eye(Tmax*nu);
-u_opt = quadprog(R+H'*Q*H,H'*Q'*(y_ref_vector-O*x0_quadcopter));
-u_opt=-u_opt;
+Q = diag(repmat([1,1,1,0,0,0],1,M));
+R = 1e-7*eye(M*nu);
+u_ref_vector = quadprog(R+H'*Q*H,H'*Q'*(y_ref_vector-O*x0_quadcopter));
+u_ref_vector=-u_ref_vector;
 
 % reshape the inputs as rowvectors for each time t
-u_ref = reshape(u_opt,[nu,Tmax])';
+u_ref = reshape(u_ref_vector,[nu,M])';
 
 % Simulation to get actual outputs and reference states
 [Y, T, x_ref] = lsim(sys,u_ref);
+
+x_ref_vector = reshape(x_ref',[M*nx,1]);
 
 close all
 

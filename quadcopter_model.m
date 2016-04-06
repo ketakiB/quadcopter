@@ -16,7 +16,7 @@ Tmax = 50;
 % System Sizes
 nx = 12;    % Nb of states
 nu = 4;     % Nb of inputs
-ny = 3;     % Nb of outputs
+ny = 6;     % Nb of outputs
 
 x0_quadcopter = zeros(nx,1);
 
@@ -70,8 +70,8 @@ B = double(B);
 
 % The output consists of states 1 to 3 and 7 to 9, so C selects these and D
 % is zero
-C = [eye(3), zeros(3,9)];
-     %zeros(3,6), eye(3), zeros(3,3)];
+C = [eye(3), zeros(3,9);
+     zeros(3,6), eye(3), zeros(3,3)];
 D = zeros(ny,nu);
 
 % Creating the continuous time system
@@ -84,15 +84,15 @@ disp('Poles:')
 disp(eig(A))
 
 % Plotting the location of the poles
-pzmap(c_sys);
+%pzmap(c_sys);
 
 % Step response
-figure;
-step(c_sys,Tmax)
+%figure;
+%step(c_sys,Tmax)
 
 % Impulse response
-figure;
-impulse(c_sys,Tmax)
+%figure;
+%impulse(c_sys,Tmax)
 
 %****************************************************
 % Checking whether the system is controlable or not.

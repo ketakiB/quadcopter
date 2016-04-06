@@ -19,14 +19,14 @@ disp('Poles:')
 disp(eig (A_d))
 
 % Plotting the location of the poles
-pzmap(sys);
+%pzmap(sys);
 
 % Step response
-figure;
-step(sys,Tmax)
+%figure;
+%step(sys,Tmax)
 
-figure;
-impulse(sys,Tmax)
+%figure;
+%impulse(sys,Tmax)
 
 %****************************************************
 % Checking whether the system is controlable or not.
