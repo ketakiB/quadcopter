@@ -34,7 +34,9 @@ u_eq = g*m/(4*k*c_m);
 % symbolic variables
 syms x y z v_x v_y v_z phi theta psi w_x w_y w_z u1 u2 u3 u4
 % state vector
-state = [x y z v_x v_y v_z phi theta psi w_x w_y w_z];
+state = [x; y; z; v_x; v_y; v_z; phi; theta; psi; w_x; w_y; w_z];
+% input vector
+input = [u1; u2; u3; u4];
 
 % The functions f:
 f1 = v_x;
@@ -53,19 +55,21 @@ f10 = L*k*c_m/Ixx * (u1-u3) - (Iyy-Izz)/Ixx * w_y*w_z;
 f11 = L*k*c_m/Iyy * (u2-u4) - (Izz-Ixx)/Iyy * w_x*w_z;
 f12 = b*c_m/Izz * (u1-u2+u3-u4) - (Ixx-Iyy)/Izz * w_y*w_x;
 
+fun = [f1; f2; f3; f4; f5; f6; f7; f8; f9; f10; f11; f12];
+
 % Deriving the functions in the state variables (Jacobian)
-J = jacobian([f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12]', state);
+J = jacobian(fun, state);
  
 % Evaluating the jacobian in the equilibrium values: the result is A
-A = subs(J,[x,y,z,v_x,v_y,v_z,phi,theta,psi,w_x,w_y,w_z,u1,u2,u3,u4],[0,0,0, 0,0,0, 0,0,0, 0,0,0, u_eq, u_eq, u_eq, u_eq]);
+A = subs(J,[state; input],[zeros(nx,1); u_eq*ones(nu,1)]);
 A = double(A);
 
 
 % Deriving the functions in the input variables
-J = jacobian([f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12]', [u1 u2 u3 u4]);
+J = jacobian(fun, input);
 
 % Evaluating the derivatives in the equilibrium values: the result is B
-B = subs(J, [x,y,z,v_x,v_y,v_z,phi,theta,psi,w_x,w_y,w_z,u1,u2,u3,u4],[0,0,0, 0,0,0, 0,0,0, 0,0,0, u_eq,u_eq,u_eq,u_eq ]);
+B = subs(J, [state; input],[zeros(nx,1); u_eq*ones(nu,1) ]);
 B = double(B);
 
 % The output consists of states 1 to 3 and 7 to 9, so C selects these and D
