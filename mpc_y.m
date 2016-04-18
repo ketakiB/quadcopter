@@ -1,8 +1,14 @@
+load 'ref_trajectory.mat';
+[M,~]=size(refs);
+nz=3;
+y_ref= refs(:,1:nz);
+y_ref_vector = reshape(y_ref',[M*nz,1]);
+
 N = 20; % prediction horizon
 umax = 100-u_eq; umin = u_eq; % input limit
 zmax = inf; zmin = inf; % room limits 
 xymax = inf;
-nz=3;
+
 % Fill the reference vector with N repititions of the last input/state such that
 % we can also compute the N last inputs with a horizon N
 for i=(M+1):(M+N)
@@ -12,16 +18,14 @@ end
 G_d = C_d(1:nz,:);
 H_d = D_d(1:nz,:);
 
-qdiag = ones(1,nz);
-%rdiag = 1e-7*ones(1,nu);
-bigQ = repmat(qdiag,1,N);
-%bigR = repmat(rdiag,1,N);
+
+Q = eye(nz);
 H11 = kron(eye(N),G_d'*Q*G_d);
 H12 = kron(eye(N),G_d'*Q*H_d);
 H21 = kron(eye(N),H_d'*Q*G_d);
 H22 = kron(eye(N),H_d'*Q*H_d);
 H = [H11, H12; H21, H22];
-f0 = 2*[kron(eye(N),G_d'*Q), zeros(nx*N,nz*N); zeros(nu*N,nz*N), kron(eye(N),H_d'*Q)];
+f0 = -2*[kron(eye(N),G_d'*Q), zeros(nx*N,nz*N); zeros(nu*N,nz*N), kron(eye(N),H_d'*Q)];
 A_eq = [eye(nx*N), zeros(nx*N,nu*N)];
 for i=1:N
     if(i<N)
@@ -46,7 +50,7 @@ for k=1:M
     % extract time horizon
     y_ref_now = y_ref_vector((k-1)*nz+1:(k+N-1)*nz);
     % complete optimization matrices
-    f = -f0*[y_ref_now; y_ref_now];
+    f = f0*[y_ref_now; y_ref_now];
     b_eq = zeros(N*nx,1);
     b_eq(1:nx) = A_d*x;
     % solve optimization problem
@@ -64,6 +68,7 @@ end
 
 close all
 
+T=T_s*(0:M-1);
 
 figure
 plot(T,Y_vector(:,1:3));
