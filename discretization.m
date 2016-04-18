@@ -1,13 +1,11 @@
 T_s = 0.05; % Sampling time
 
-% Discretization using Bilinear Transformation
+
 
 M = inv(eye(nx) - A*T_s/2);
 
-A_d = M*(eye(nx) + A*T_s/2);
-B_d = M*B*T_s;
-C_d = C*M;
-D_d = D + C_d*B*T_s/2;
+%[A_d,B_d,C_d,D_d]=c2dm(A,B,C,D,T_s,'tustin'); % Discretization using Bilinear Transformation
+[A_d,B_d,C_d,D_d]=c2dm(A,B,C,D,T_s,'zoh'); %Discretization using zero order hold
 
 % Creating the discrete time system
 sys = ss(A_d,B_d,C_d,D_d,T_s);

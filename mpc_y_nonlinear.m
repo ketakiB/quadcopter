@@ -2,10 +2,11 @@ load 'ref_trajectory.mat';
 [M,~]=size(refs);
 nz=3;
 y_ref= refs(:,1:nz);
+y_ref = 0*ones(size(y_ref));
 y_ref_vector = reshape(y_ref',[M*nz,1]);
 
 N = 20; % prediction horizon
-umax = 100-u_eq; umin = u_eq; % input limit
+umax = 200; umin = 200; % input limit
 zmax = inf; zmin = inf; % room limits 
 xymax = inf;
 
@@ -46,6 +47,7 @@ b_ineq_x_min = [xymax; xymax; zmin; inf*ones(nx-3,1)];
 b_ineq = [repmat(b_ineq_x_max,N,1); repmat(b_ineq_x_min,N,1) ;repmat(b_ineq_u_max,N,1); repmat(b_ineq_u_min,N,1)];
 
 x = x0_quadcopter; 
+options = odeset('RelTol',1e-13,'AbsTol',1e-16);
 for k=1:M
     % extract time horizon
     y_ref_now = y_ref_vector((k-1)*nz+1:(k+N-1)*nz);
@@ -59,8 +61,10 @@ for k=1:M
     % take first input to apply 
     u = xu(nx*N+1:nx*N+nu);
     % update state
-    y = C_d*x + D_d*u;
-    x = A_d*x + B_d*u;
+    y = C_d*x;
+    %[~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
+    % x = X(end,:)';
+    x = ffun2([x;u+u_eq*ones(nu,1)]);
     U_vector(k,:) = u';
     X_vector(k,:) = x';
     Y_vector(k,:) = y';
@@ -73,13 +77,13 @@ T=T_s*(0:M-1);
 figure
 plot(T,Y_vector(:,1:3));
 hold on
-plot(T,refs(:,1:3),'-.');
+plot(T,y_ref,'-.');
 legend({'x','y','z','x_{ref}','y_{ref}','z_{ref}'},'FontSize',18);
 title('Resulting outputs');
 xlabel('T [s]')
 
 figure
-plot3(refs(:,1),refs(:,2),refs(:,3),'ro-');
+plot3(y_ref(:,1),y_ref(:,2),y_ref(:,3),'ro-');
 hold on
 plot3(Y_vector(:,1),Y_vector(:,2),Y_vector(:,3));
 legend({'reference','quadcopter'},'FontSize',18);
