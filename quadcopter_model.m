@@ -1,4 +1,4 @@
-   clear;
+clear;
 
 % Data
 m = 0.5;

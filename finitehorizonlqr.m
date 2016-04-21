@@ -1,9 +1,9 @@
 close all
-M = 120;
-T_s = 0.2;
+M = 500;
+T_s = 0.05;
 Q = eye(nx);
 R = eye(nu);
-[K,S] = lqr(A,B,Q,R);
+P = eye(nx);
 
 U_vector = zeros(M,nu);
 X_vector = zeros(M,nx);
@@ -11,29 +11,27 @@ Y_vector = zeros(M,ny);
 
 % initial state
 x = x0_quadcopter;
-% x(1:3) = 12;
-% x(3) = 20;
-% x(1:2) = 12;
-% x(4:6) = 9; 
-% x(7:9) = 2;
-% x(1:3) = 10; x(4:6) = 2;
-
-% x(1:3) = 14; % does not go to origin
-% x(4:6) = 10; % doesnt work
-% x(7:9) = 5; % doesnt work
-% x(1:3) = 10; x(4:6) = 3; % doesnt work
+x(1:3) = 17;
+% x(1:2) = 18;
+% x(4:6) = 10; 
 
 
 options = odeset('RelTol',1e-13,'AbsTol',1e-16);
+
 for k=1:M
-    u = -K*x;
+    u = -R\B'*P*x;
+    % solve the Riccati ODE backwards in time
+    [~,P] = ode45(@(t,y) riccatiODE(t,y,A,B,Q,R,nx), [T_s,0], reshape(P,nx*nx,1));
+    P = reshape(P(end,:),nx,nx);
     y = C*x;
     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
     x = X(end,:)';
+    
     U_vector(k,:) = u';
     X_vector(k,:) = x';
     Y_vector(k,:) = y';
 end
+
 
 T=T_s*(0:M-1);
 
@@ -63,3 +61,4 @@ figure
 plot(T,U_vector);
 title('Control inputs');
 xlabel('T [s]')
+

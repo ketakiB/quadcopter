@@ -2,7 +2,7 @@ load 'ref_trajectory.mat';
 [M,~]=size(refs);
 nz=3;
 y_ref= refs(:,1:nz);
-y_ref = 0*ones(size(y_ref));
+y_ref = 0.1*ones(size(y_ref));
 y_ref_vector = reshape(y_ref',[M*nz,1]);
 
 N = 20; % prediction horizon
@@ -62,9 +62,10 @@ for k=1:M
     u = xu(nx*N+1:nx*N+nu);
     % update state
     y = C_d*x;
-    %[~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
-    % x = X(end,:)';
+%     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
+%     x = X(end,:)';
     x = ffun2([x;u+u_eq*ones(nu,1)]);
+    x = ffun2([x;u]);
     U_vector(k,:) = u';
     X_vector(k,:) = x';
     Y_vector(k,:) = y';
