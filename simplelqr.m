@@ -1,7 +1,8 @@
 close all
-M = 120;
-T_s = 0.2;
-Q = eye(nx);
+M = 500;
+T_s = 0.05;
+Q = diag([1,1,10,1*ones(1,nx-3)]);
+% extra weight on z because it stabilizes the slowest
 R = eye(nu);
 [K,S] = lqr(A,B,Q,R);
 
@@ -14,21 +15,15 @@ x = x0_quadcopter;
 % x(1:3) = 12;
 % x(3) = 20;
 % x(1:2) = 12;
-% x(4:6) = 9; 
-% x(7:9) = 2;
+% x(7:9) = 0.25; %about 15° seems reasonable 
 % x(1:3) = 10; x(4:6) = 2;
 
-% x(1:3) = 14; % does not go to origin
-% x(4:6) = 10; % doesnt work
-% x(7:9) = 5; % doesnt work
-% x(1:3) = 10; x(4:6) = 3; % doesnt work
 
-
-options = odeset('RelTol',1e-13,'AbsTol',1e-16);
+%options = odeset('RelTol',1e-13,'AbsTol',1e-16);
 for k=1:M
     u = -K*x;
     y = C*x;
-    [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
+    [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x);
     x = X(end,:)';
     U_vector(k,:) = u';
     X_vector(k,:) = x';
@@ -51,7 +46,7 @@ legend({'quadcopter'},'FontSize',18);
 xlabel('x [m]')
 ylabel('y [m]')
 zlabel('z [m]')
-title('Simulation results MPC')
+title('Simulation results LQR')
 
 figure
 plot(T,X_vector);
