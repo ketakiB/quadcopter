@@ -1,13 +1,15 @@
 load 'ref_trajectory.mat';
+refs=zeros(500,ny);
 [M,~]=size(refs);
-nz=3;
-y_ref= refs(:,1:nz);
-y_ref = 0*ones(size(y_ref));
+nz=ny;
+y_ref= refs;
+y_ref = zeros(size(y_ref));
 y_ref_vector = reshape(y_ref',[M*nz,1]);
+x0_quadcopter=[1;1;1;ones(nx-3,1)];
 
 N = 20; % prediction horizon
-umax = 200; umin = 200; % input limit
-zmax = inf; zmin = inf; % room limits 
+umax = 100-u_eq; umin = u_eq; % input limit
+zmax = inf; zmin = zmax; % room limits 
 xymax = inf;
 
 % Fill the reference vector with N repititions of the last input/state such that
@@ -16,11 +18,11 @@ for i=(M+1):(M+N)
     y_ref_vector((i-1)*nz+1:i*nz) = y_ref_vector(end-nz+1:end);
 end
 
-G_d = C_d(1:nz,:);
-H_d = D_d(1:nz,:);
+G_d = C_d; %(1:nz,:);
+H_d = D_d; %(1:nz,:);
 
 
-Q = eye(nz);
+Q = eye(nz); Q(3,3)=10;
 H11 = kron(eye(N),G_d'*Q*G_d);
 H12 = kron(eye(N),G_d'*Q*H_d);
 H21 = kron(eye(N),H_d'*Q*G_d);
