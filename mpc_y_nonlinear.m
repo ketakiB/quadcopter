@@ -1,9 +1,11 @@
 load 'ref_trajectory.mat';
 refs=zeros(500,ny);
 [M,~]=size(refs);
+
 nz=ny;
 y_ref= refs;
 y_ref = zeros(size(y_ref));
+
 y_ref_vector = reshape(y_ref',[M*nz,1]);
 x0_quadcopter=[1;1;1;ones(nx-3,1)];
 
@@ -64,9 +66,10 @@ for k=1:M
     u = xu(nx*N+1:nx*N+nu);
     % update state
     y = C_d*x;
-    %[~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
-    % x = X(end,:)';
+%     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
+%     x = X(end,:)';
     x = ffun2([x;u+u_eq*ones(nu,1)]);
+    x = ffun2([x;u]);
     U_vector(k,:) = u';
     X_vector(k,:) = x';
     Y_vector(k,:) = y';

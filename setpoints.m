@@ -46,6 +46,7 @@ u_ref = reshape(u_ref_vector,[nu,M])';
 % Simulation to get actual outputs and reference states
 [Y, T, x_ref] = lsim(sys,u_ref);
 
+
 x_ref_vector = reshape(x_ref',[M*nx,1]);
 
 close all
