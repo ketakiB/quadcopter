@@ -1,7 +1,7 @@
 close all
 M = 500;
 T_s = 0.05;
-Q = eye(nx);
+Q = diag([1,1,10,1*ones(1,nx-3)]);
 R = eye(nu);
 P = eye(nx);
 
@@ -11,9 +11,10 @@ Y_vector = zeros(M,ny);
 
 % initial state
 x = x0_quadcopter;
-x(1:3) = 17;
+% x(1:3) = 17;
 % x(1:2) = 18;
 % x(4:6) = 10; 
+x(7:9) = 1;
 
 
 options = odeset('RelTol',1e-13,'AbsTol',1e-16);
