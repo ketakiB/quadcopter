@@ -1,18 +1,17 @@
-load 'ref_trajectory.mat';
-refs=zeros(500,ny);
+%load 'ref_trajectory.mat';
+%refs=zeros(500,ny);
 [M,~]=size(refs);
 
-nz=ny;
-y_ref= refs;
-y_ref = zeros(size(y_ref));
+y_ref = [refs, zeros(M,ny-3)];
 
-y_ref_vector = reshape(y_ref',[M*nz,1]);
-x0_quadcopter=[1;1;1;ones(nx-3,1)];
 
-N = 20; % prediction horizon
+y_ref_vector = reshape(y_ref',[M*ny,1]);
+x0_quadcopter=zeros(nx,1);
+
+N = 100; % prediction horizon
 umax = 100-u_eq; umin = u_eq; % input limit
-zmax = inf; zmin = zmax; % room limits 
-xymax = inf;
+zmax = 6; zmin = 0; % room limits 
+xymax = 3;
 
 % Fill the reference vector with N repititions of the last input/state such that
 % we can also compute the N last inputs with a horizon N
@@ -20,17 +19,13 @@ for i=(M+1):(M+N)
     y_ref_vector((i-1)*nz+1:i*nz) = y_ref_vector(end-nz+1:end);
 end
 
-G_d = C_d; %(1:nz,:);
-H_d = D_d; %(1:nz,:);
-
-
 Q = eye(nz); Q(3,3)=10;
-H11 = kron(eye(N),G_d'*Q*G_d);
-H12 = kron(eye(N),G_d'*Q*H_d);
-H21 = kron(eye(N),H_d'*Q*G_d);
-H22 = kron(eye(N),H_d'*Q*H_d);
+H11 = kron(eye(N),C_d'*Q*C_d);
+H12 = kron(eye(N),C_d'*Q*D_d);
+H21 = kron(eye(N),D_d'*Q*C_d);
+H22 = kron(eye(N),D_d'*Q*D_d);
 H = 2*[H11, H12; H21, H22];
-f0 = -2*[kron(eye(N),G_d'*Q), zeros(nx*N,nz*N); zeros(nu*N,nz*N), kron(eye(N),H_d'*Q)];
+f0 = -2*[kron(eye(N),C_d'*Q), zeros(nx*N,nz*N); zeros(nu*N,nz*N), kron(eye(N),D_d'*Q)];
 A_eq = [eye(nx*N), zeros(nx*N,nu*N)];
 for i=1:N
     if(i<N)
@@ -51,6 +46,10 @@ b_ineq_x_min = [xymax; xymax; zmin; inf*ones(nx-3,1)];
 b_ineq = [repmat(b_ineq_x_max,N,1); repmat(b_ineq_x_min,N,1) ;repmat(b_ineq_u_max,N,1); repmat(b_ineq_u_min,N,1)];
 
 x = x0_quadcopter; 
+
+U_vector = zeros(M,nu);
+X_vector = zeros(M,nx);
+Y_vector = zeros(M,ny);
 options = odeset('RelTol',1e-13,'AbsTol',1e-16);
 for k=1:M
     % extract time horizon
@@ -66,15 +65,14 @@ for k=1:M
     u = xu(nx*N+1:nx*N+nu);
     % update state
     y = C_d*x;
-%     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
-%     x = X(end,:)';
-    x = ffun2([x;u+u_eq*ones(nu,1)]);
-    x = ffun2([x;u]);
+    [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
+    x = X(end,:)';
+    %x = ffun2([x;u+u_eq*ones(nu,1)]);
     U_vector(k,:) = u';
     X_vector(k,:) = x';
     Y_vector(k,:) = y';
 end
-
+%%
 close all
 
 T=T_s*(0:M-1);
@@ -82,13 +80,13 @@ T=T_s*(0:M-1);
 figure
 plot(T,Y_vector(:,1:3));
 hold on
-plot(T,y_ref,'-.');
+plot(T,y_ref(:,1:3),'--');
 legend({'x','y','z','x_{ref}','y_{ref}','z_{ref}'},'FontSize',18);
 title('Resulting outputs');
 xlabel('T [s]')
 
 figure
-plot3(y_ref(:,1),y_ref(:,2),y_ref(:,3),'ro-');
+plot3(y_ref(:,1),y_ref(:,2),y_ref(:,3),'ro');
 hold on
 plot3(Y_vector(:,1),Y_vector(:,2),Y_vector(:,3));
 legend({'reference','quadcopter'},'FontSize',18);
