@@ -47,9 +47,11 @@ b_ineq_x_min = [xymax; xymax; zmin; inf*ones(nx-3,1)];
 b_ineq = [repmat(b_ineq_x_max,N,1); repmat(b_ineq_x_min,N,1) ;repmat(b_ineq_u_max,N,1); repmat(b_ineq_u_min,N,1)];
 
 x = x0_quadcopter; 
+x_k = x;
 
 U_vector = zeros(M,nu);
 X_vector = zeros(M,nx);
+X_k_vector = zeros(M,nx);
 Y_vector = zeros(M,ny);
 %options = odeset('RelTol',1e-13,'AbsTol',1e-16);
 for k=1:M
@@ -58,19 +60,20 @@ for k=1:M
     % complete optimization matrices
     f = f0*[y_ref_now; y_ref_now];
     b_eq = zeros(N*nx,1);
-    b_eq(1:nx) = A_d*x;
+    b_eq(1:nx) = A_d*x_k;
     % solve optimization problem
     xu = quadprog(H,f,A_ineq,b_ineq,A_eq,b_eq);
-    %xu = quadprog(H,f,[],[],A_eq,b_eq);
+    % xu = quadprog(H,f,[],[],A_eq,b_eq);
     % take first input to apply 
     u = xu(nx*N+1:nx*N+nu);
     % update state
     y = C_d*x;
     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x);
     x = X(end,:)';
-    %x = ffun2([x;u+u_eq*ones(nu,1)]);
+    x_k = A_k*x_k + B_k*[u; y]; % state estimates
     U_vector(k,:) = u';
     X_vector(k,:) = x';
+    X_k_vector(k,:) = x_k';
     Y_vector(k,:) = y';
 end
 %%
@@ -97,8 +100,20 @@ zlabel('z [m]')
 title('Simulation results MPC')
 
 figure
-plot(T,X_vector);
-legend({'x','y','z','v_x','v_y','v_z','\phi','\tau','\psi','\omega_x','\omega_y','\omega_z'},'FontSize',18);
+plot(T,X_k_vector(:,1:3));
+hold on 
+plot(T,X_vector(:,1:3),'--');
+legend({'x','y','z','x_k','y_k','z_k'},'FontSize',18);
+%legend({'x','y','z','v_x','v_y','v_z','\phi','\tau','\psi','\omega_x','\omega_y','\omega_z'},'FontSize',18);
+title('States');
+xlabel('T [s]')
+
+figure
+plot(T,X_vector(:,4:6),'--');
+hold on 
+plot(T,X_k_vector(:,4:6));
+legend({'\phi','\tau','\psi','\phi_k','\tau_k','\psi_k'},'FontSize',18);
+%legend({'x','y','z','v_x','v_y','v_z','\phi','\tau','\psi','\omega_x','\omega_y','\omega_z'},'FontSize',18);
 title('States');
 xlabel('T [s]')
 

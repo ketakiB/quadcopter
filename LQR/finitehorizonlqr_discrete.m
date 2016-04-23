@@ -3,7 +3,7 @@ M = 500;
 T_s = 0.05;
 Q = diag([1,1,1,1*ones(1,nx-3)]);
 R = eye(nu);
-P = Q;
+S =Q;
 
 U_vector = zeros(M,nu);
 X_vector = zeros(M,nx);
@@ -11,18 +11,21 @@ Y_vector = zeros(M,ny);
 
 % initial state
 x = x0_quadcopter;
-x(1:3) = 14;
+% x(1:3) = 14;
 % x(1:2) = 18;
 % x(4:6) = 10; 
 
 % solve the Riccati ODE backwards in time
-sol = ode45(@(t,y) riccatiODE(t,y,A,B,Q,R,nx), [T_s*M,0], reshape(P,nx*nx,1));
+sol = zeros(M,nx*nx);
+for k=M:-1:1
+    sol(k,:) = reshape(S,1,nx*nx); %store S_k+1 for iteration k
+    S = riccati_diffeq(S,A_d,B_d,Q,R);
+end
 options = odeset('RelTol',1e-13,'AbsTol',1e-16);
-
 for k=1:M
-    P = deval(sol,(k-1)*T_s); % evaluate P 
-    P = reshape(P,nx,nx);
-    u = -inv(R)*B'*P*x;
+    S = reshape(sol(k,:),nx,nx);
+    K = inv(R+B_d'*S*B_d)*B_d'*S*A_d;
+    u = -K*x;
     
     y = C*x;
     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
