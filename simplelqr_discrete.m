@@ -1,5 +1,5 @@
 close all
-M = 500;
+M = 1000;
 T_s = 0.05;
 Q = diag([1,1,10,1*ones(1,nx-3)]);
 R = eye(nu);
