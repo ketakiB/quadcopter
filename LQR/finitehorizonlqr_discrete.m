@@ -1,8 +1,8 @@
 close all
 M = 500;
 T_s = 0.05;
-Q = diag([1,1,1,1*ones(1,nx-3)]);
-R = eye(nu);
+Q = diag([1,1,10,1*ones(1,nx-3)]);
+R = 10*eye(nu);
 S =Q;
 
 U_vector = zeros(M,nu);
@@ -11,7 +11,7 @@ Y_vector = zeros(M,ny);
 
 % initial state
 x = x0_quadcopter;
-% x(1:3) = 14;
+x(1:3) = 14;
 % x(1:2) = 18;
 % x(4:6) = 10; 
 
