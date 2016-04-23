@@ -1,6 +1,6 @@
 load 'references.mat';
 [M,~]=size(refs);
-M=M/2;
+%M=M/2;
 
 y_ref = [refs(1:M,:), zeros(M,ny-3)];
 
@@ -20,11 +20,12 @@ for i=(M+1):(M+N)
     y_ref_vector((i-1)*ny+1:i*ny) = y_ref_vector(end-ny+1:end);
 end
 
-Q = eye(ny); Q(3,3)=10;
+Q = eye(ny); Q(3,3)=1e3;
+R = 1e-3*eye(nu);
 H11 = kron(eye(N),C_d'*Q*C_d);
 H12 = kron(eye(N),C_d'*Q*D_d);
 H21 = kron(eye(N),D_d'*Q*C_d);
-H22 = kron(eye(N),D_d'*Q*D_d);
+H22 = kron(eye(N),D_d'*Q*D_d+R);
 H = 2*[H11, H12; H21, H22];
 f0 = -2*[kron(eye(N),C_d'*Q), zeros(nx*N,ny*N); zeros(nu*N,ny*N), kron(eye(N),D_d'*Q)];
 A_eq = [eye(nx*N), zeros(nx*N,nu*N)];

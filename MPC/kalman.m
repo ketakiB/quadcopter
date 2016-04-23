@@ -2,7 +2,7 @@
 % Kalman Filter
 %****************************************************
 
-R_k = 1e-3*diag([2.5e-5*ones(1,3), 7.57e-5*ones(1,3)]); % Covariance matrix measurement noise
+R_k = diag([2.5e-5*ones(1,3), 7.57e-5*ones(1,3)]); % Covariance matrix measurement noise
 Q_k  = 1e-5*diag([1*ones(1,3),1e3*ones(1,3),1*ones(1,6)]);   % Covariance matrix process noise
 %Q_k = 1e-5*diag([1*ones(1,3),1e3*ones(1,2),1e5,1*ones(1,6)]); % different Q for when payload on z
 G = eye(nx);        % Matrix that is multiplied with process noise in state equation

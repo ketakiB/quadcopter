@@ -1,4 +1,4 @@
-N = 100; % prediction horizon
+N = 50; % prediction horizon
 
 %For a square system, we only use outputs x,y,z and psi
 % If we use x,y,z and phi or x,y,z and theta, the matrix big_A is singular
@@ -46,7 +46,7 @@ for k=1:M
     Y_vector(k,:) = y';
 end
 
-
+refs = refs(:,1:3);
 T=T_s*(0:M-1);
 
 figure
