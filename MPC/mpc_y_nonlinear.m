@@ -8,7 +8,8 @@ y_ref = [refs, zeros(M,ny-3)];
 y_ref_vector = reshape(y_ref',[M*ny,1]);
 x0_quadcopter=zeros(nx,1);
 
-N = 100; % prediction horizon
+N = 100; % prediction horizon 
+% NOTE: control inputs are clearly smaller and more regular with larger N
 umax = 100-u_eq; umin = u_eq; % input limit
 zmax = 6; zmin = 0; % room limits 
 xymax = 3;
