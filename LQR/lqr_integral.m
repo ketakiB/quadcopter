@@ -1,68 +1,70 @@
-
 close all;
 
-%For a square system, we only use outputs x,y,z and psi
-% If we use x,y,z and phi or x,y,z and theta, the matrix big_A is singular
-big_A = [A_d - eye(nx), B_d; 
-        C_d(1:3,:), D_d(1:3,:);
-        C_d(6,:), D_d(6,:)];
+%Constructing the Augmented system with the first 3 outputs only (number of
+%states is 12+3 = 15
 
-big_b = [zeros(nx,4);
-        eye(4)];
-big_N = inv(big_A)*big_b;
+big_A = [A_d  zeros(nx,3) ;
+       -C_d(1:3,:) eye(3)];
+big_B = [B_d ; -D_d(1:3,:)];
 
-N_x = big_N(1:nx,:); % x_ss = N_x * ref
-N_u = big_N(nx+1:end,:); % u_ss = N_u * ref
+big_nx = nx+3; % Number of states of the augmented system
+
+% Checking the controlabillity of the Augmented system
+disp('Rank of the controllability matrix of the augmented system:');
+rank(ctrb(big_A,big_B))
+
 
 load 'references_ss.mat';
-[L,~] = size(refs_ss);
-refs_ss = [refs_ss, zeros(L,1)]; 
+[K,~] = size(refs_ss);
 M = 125;
 T_s = 0.05;
-Q = diag([10,10,1e4,1*ones(1,nx-3)]);
-R = eye(nu);
+Q_i = diag([1e0*ones(1,3),1e0*ones(1,3),1e3*ones(1,3),1e0*ones(1,3),1e0*ones(1,2),1e4]);
+R_i = 1e1*eye(nu);
 
 % Computing the feedback matrix of the augmented system
-[K,S,~] = dlqr(A_d, B_d, Q, R);
+[big_K,S,~] = dlqr(big_A, big_B, Q_i, R_i);
+K_s = big_K(:,1:nx);
+K_i = big_K(:,nx+1:end);
 
-U_vector = zeros(L*M,nu);
-X_vector = zeros(L*M,nx);
-Y_vector = zeros(L*M,ny);
-ref_vector = zeros(L*M,4);
+U_vector = zeros(K*M,nu);
+X_vector = zeros(K*M,nx);
+Y_vector = zeros(K*M,ny);
+ref_vector = zeros(K*M,3);
 
 % initial state
 x = x0_quadcopter;
+x_i = refs_ss(1,:)'; %integral states
 
 
 %options = odeset('RelTol',1e-13,'AbsTol',1e-16);
-for k=1:L
+for k=1:K
     for m=1:M
-        r = refs_ss(k,:)'; % reference 
-        u = -K*(x-N_x*r)+N_u*r;
+        u = -K_s*x-K_i*x_i;
         y = C_d*x;
         [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x);
         x = X(end,:)';
+        x_i = x_i + refs_ss(k,:)'-y(1:3);
         U_vector((k-1)*M+m,:) = u';
         X_vector((k-1)*M+m,:) = x';
         Y_vector((k-1)*M+m,:) = y';
-        ref_vector((k-1)*M+m,:)=r';
+        ref_vector((k-1)*M+m,:)=refs_ss(k,:);
     end 
 end
 
-T=T_s*(0:M*L-1);
+T=T_s*(0:M*K-1);
 
 figure
-plot(T,ref_vector,'--');
+plot(T,ref_vector);
 hold on
 plot(T,Y_vector(:,1:3));
-legend({'x_{ref}','y_{ref}','z_{ref}','x','y','z'},'FontSize',18);
+legend({'x_ref','y_ref','z_ref','x','y','z'},'FontSize',18);
 title('Resulting outputs');
 xlabel('T [s]')
 
 figure
 plot3(Y_vector(:,1),Y_vector(:,2),Y_vector(:,3));
 hold on
-for k=1:L
+for k=1:K
     plot3(refs_ss(k,1),refs_ss(k,2),refs_ss(k,3),'ro-');
 end
 legend({'quadcopter','reference'},'FontSize',18);

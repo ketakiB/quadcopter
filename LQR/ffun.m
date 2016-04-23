@@ -8,7 +8,7 @@ v_z=state(6); phi = state(7); theta=state(8); psi=state(9); w_x=state(10);
 w_y=state(11); w_z=state(12);
 u1=input(1); u2=input(2); u3=input(3); u4=input(4);
 
-m = 0.5;
+m = 0.5; % + 0.1; %adding an extra mass (payload) to test robustness
 L = 0.25;
 k = 3 * 10^(-6);
 b = 1 * 10^(-7);
