@@ -27,7 +27,7 @@ for k=1:M
     K = inv(R+B_d'*S*B_d)*B_d'*S*A_d;
     u = -K*x;
     
-    y = C*x;
+    y = C_d*x;
     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x,options);
     x = X(end,:)';
     
