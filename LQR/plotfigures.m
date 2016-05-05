@@ -1,7 +1,7 @@
 close all
 
 f1 = figure('Position', [1, 500, 1050, 300]);
-plot(T,ref_vector,'--');
+plot(T,ref_vector(:,1:3),'--');
 hold on
 plot(T,Y_vector(:,1:3));
 legend({'x_{ref}','y_{ref}','z_{ref}','x','y','z'},'FontSize',15,'Location','southwest');
@@ -42,6 +42,6 @@ f6 = figure('Position', [1, 500, 1050, 300]);
 plot(T,X_k_vector(:,4:6));
 hold on
 plot(T,X_vector(:,4:6),'--');
-legend({'\phi_k','\tau_k','\psi_k','\phi','\tau','\psi'},'FontSize',15);
+legend({'v_x_k','v_y_k','v_z_k','v_x','v_y','v_z'},'FontSize',15);
 xlabel('T [s]','FontSize',12)
 ylabel('[rad]','FontSize',12)

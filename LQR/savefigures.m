@@ -1,7 +1,7 @@
 % don't forget to edit names
 
-method = 'lqg';
-refmethod = '';
+method = 'lqr';
+refmethod = 'zerodesign';
 extra = '';
 
 set(f1,'PaperPositionMode','auto');
@@ -16,4 +16,4 @@ print(f4,strcat(method,'_',refmethod,'_',extra,'control'),'-dpng','-r300');
 set(f5,'PaperPositionMode','auto');
 print(f5,strcat(method,'_',refmethod,'_',extra,'xyz'),'-dpng','-r300');
 set(f6,'PaperPositionMode','auto');
-print(f6,strcat(method,'_',refmethod,'_',extra,'angles'),'-dpng','-r300');
+print(f6,strcat(method,'_',refmethod,'_',extra,'v'),'-dpng','-r300');
