@@ -12,13 +12,15 @@ finitehorizonlqr_tracking: Finite horizon LQR control with zero design
 
 lqr_integral: LQR control with Integral control
 
+lqg_tracking: LQG control with zero design
+
 lqg_integral: LQG control with Integral control
 
 ## MPC
 
 The MPC folder contains the code that implements Model Predictive Control. To set up the variables for the quadcopter, run quadcopter_model then discretization. The following files implements different controllers:
 
-mpc_lqr_tracking: MPC using finite horizon LQR 
+mpc_lqr_tracking: MPC using finite horizon LQR
 
 mpc_y_nonlinear: MPC using quadprog
 
