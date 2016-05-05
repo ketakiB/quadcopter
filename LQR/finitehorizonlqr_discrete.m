@@ -14,7 +14,7 @@ Y_vector = zeros(M,ny);
 x = x0_quadcopter;
 x(1:3) = 10;
 %x(1:2) = 18;
-% x(4:6) = 10; 
+% x(4:6) = 10;
 
 % solve the Riccati ODE backwards in time
 sol = zeros(M,nx*nx);
@@ -31,7 +31,7 @@ for k=1:M
     y = C*x;
     [~,X]=ode113(@(t,xt)ffun([xt;u+u_eq*ones(nu,1)]),[0,T_s],x);
     x = X(end,:)';
-    
+
     U_vector(k,:) = u';
     X_vector(k,:) = x';
     Y_vector(k,:) = y';
@@ -66,4 +66,3 @@ figure
 plot(T,U_vector);
 title('Control inputs');
 xlabel('T [s]')
-
